@@ -1,0 +1,74 @@
+// Fonts
+@import url('https://fonts.googleapis.com/css?family=Nunito');
+
+// Variables
+@import 'variables';
+
+// Bootstrap
+@import "~bootstrap-vue/dist/bootstrap-vue.css";
+@import "~perfect-scrollbar/css/perfect-scrollbar.css";
+@import "~socicon/css/socicon.css";
+@import "~animate.css";
+@import "~@fortawesome/fontawesome-free/css/all.css";
+@import "~line-awesome/dist/line-awesome/css/line-awesome.css";
+@import "assets/plugins/flaticon/flaticon.css";
+@import "assets/plugins/flaticon2/flaticon.css";
+@import "assets/plugins/keenthemes-icons/font/ki.css";
+
+// Main demo style scss
+@import "assets/sass/style.vue";
+
+.error-message {
+    color: $danger;
+}
+
+.is-error {
+    border: 1px solid $danger!important;
+    border-radius: $border-radius;
+}
+.vue-select div.input-sm {
+    padding: 0;
+}
+
+.vue-select input::placeholder {
+    color: #c2c0d7;
+}
+.vue-select .vs__selected {
+    margin: 0;
+}
+.vue-select .vs__search {
+    margin: 0;
+}
+
+.v-select {
+    .vs__dropdown-toggle {
+      width: 100%;
+      height: calc(1.6em + 1.3rem + 2px);
+      padding: 0.65rem 1rem;
+      font-size: 0.9rem;
+      font-weight: 400;
+      line-height: 1.6;
+      color: #3F4254;
+      background-color: #ffffff;
+      background-clip: padding-box;
+      border: 1px solid #E4E6EF;
+      border-radius: 0.85rem;
+      box-shadow: none;
+      transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+  
+      .vs__search {
+        margin: 0!important;
+        padding: 1px 2px;
+        background: transparent;
+      }
+    }
+  }
+
+.custom-control-label {
+  &::before {
+    cursor: pointer;
+  }
+  &::after {
+    cursor: pointer;
+  }
+}

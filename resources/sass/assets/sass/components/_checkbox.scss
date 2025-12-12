@@ -1,0 +1,237 @@
+//
+// checkbox
+//
+
+
+// Base
+.checkbox {
+    display: flex;
+    align-items: center;
+    position: relative;
+    text-align: left;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: get($checkbox-config, transition);
+    margin: 0;
+
+    > span {
+        background-color: none;
+		display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        @include border-radius($border-radius);
+
+        &:after {
+            content:'';
+			border-color: transparent;
+			border-style: solid;
+            border-width: 0 2px 2px 0#{'/*rtl:ignore*/'} !important;
+            transform: rotate(45deg)#{'/*rtl:ignore*/'};
+			margin-top: -2px;
+        }
+    }
+
+    // Hide default browser input
+    > input {
+        position: absolute;
+        z-index: -1;
+        opacity: 0;
+    }
+
+    // Hover & focus states
+	&:hover > input:not([disabled]) ~ span,
+	> input:focus ~ span {
+		transition: get($checkbox-config, transition);
+	}
+
+    // Disabled state
+    &.checkbox-disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+    }
+
+    // Checked state
+    > input:checked ~ span {
+        transition: get($checkbox-config, transition);
+        background-color: none;
+
+        &:after {
+            display: block;
+        }
+    }
+
+	// Square Style
+    &.checkbox-square {
+        > span {
+            border-radius: 0;
+        }
+    }
+
+	// Circle Style
+    &.checkbox-circle {
+        > span {
+			@include border-radius(50%);
+        }
+    }
+
+	// Outline type
+    &.checkbox-outline {
+        > span {
+            border-width: 1px;
+			border-style: solid;
+        }
+    }
+
+    // Outline 2x type
+	&.checkbox-outline-2x {
+		> span {
+            border-width: 2px !important;
+        }
+	}
+
+    // Accent type
+    &.checkbox-accent {
+        > span {
+            border-width: get($checkbox-config, types, accent, borderWidth) !important;
+            border-style: solid !important;
+            background-color: transparent !important;
+
+            &:after {
+    			display: block;
+            }
+        }
+    }
+}
+
+// Sizes
+.checkbox {
+    // Solid type
+    @include checkbox-size(get($checkbox-config, types, solid, sizes, default, base), get($checkbox-config, types, solid, sizes, default, tick));
+    &.checkbox-lg {
+        @include checkbox-size(get($checkbox-config, types, solid, sizes, lg, base), get($checkbox-config, types, solid, sizes, lg, tick));
+    }
+
+    // Outline type
+    &.checkbox-outline {
+        @include checkbox-size(get($checkbox-config, types, outline, sizes, default, base), get($checkbox-config, types, outline, sizes, default, tick));
+
+        &.checkbox-lg {
+            @include checkbox-size(get($checkbox-config, types, outline, sizes, lg, base), get($checkbox-config, types, outline, sizes, lg, tick));
+        }
+    }
+}
+
+// Theme colors
+.checkbox {
+    // Default style
+	@include checkbox-solid-theme(get($checkbox-config, types, solid, theme, base-color), $primary, $white);
+
+    // Outline style
+    &.checkbox-outline {
+        @include checkbox-outline-theme(get($checkbox-config, types, outline, theme, base-color), $primary, $primary);
+    }
+
+    // Color options
+    @each $name, $color in $theme-colors {
+		// Default style
+        &.checkbox-#{$name} {
+            @include checkbox-solid-theme(get($checkbox-config, color), $color, $white);
+        }
+
+        // Light style
+        &.checkbox-light-#{$name} {
+            @include checkbox-solid-theme(theme-light-color($name), $color, theme-inverse-color($name));
+        }
+
+		// Outline style
+		&.checkbox-outline.checkbox-#{$name} {
+            @include checkbox-outline-theme(get($checkbox-config, types, outline, theme, base-color), $color, $color);
+        }
+    }
+}
+
+// Inline checkbox
+.checkbox-inline {
+    display: flex;
+    flex-wrap: wrap;
+    
+    .checkbox {
+        margin-right: get($checkbox-config, itemSpace);
+        margin-bottom: get($checkbox-config, inlineItemSpace);
+
+        span {
+            margin-right: get($checkbox-config, labelSpace);
+        }
+
+        &:last-child {
+            margin-right: 0;
+        }
+    }
+}
+
+// List checkbox
+.checkbox-list {
+    display: flex;
+    flex-direction: column;
+
+    .checkbox {
+        margin-bottom: get($checkbox-config, itemSpace);
+
+        span {
+            margin-right: get($checkbox-config, labelSpace);
+        }
+
+        &:last-child {
+            margin-bottom: 0;
+        }
+    }
+}
+
+// Input group
+.input-group {
+    .checkbox {
+        margin-bottom: 0 !important;
+        padding-left: 0;
+    }
+}
+
+// Form integration
+.form-inline {
+    .checkbox {
+        margin-left: 15px;
+        margin-right: 15px;
+    }
+}
+
+.custom-checkbox {
+    .custom-control-label {
+        width: 100%;
+
+        &::before {
+            width: 1.25rem;
+            height: 1.25rem;
+            top: 50%;
+            transform: translateY(-50%);
+            border-radius: $border-radius-sm;
+        }
+        &::after {
+            width: 1.25rem;
+            height: 1.25rem;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+    }
+
+    &.minus {
+        .custom-control-label {
+            &::before {
+                background-color: unset;
+            }
+            &::after {
+                background-image: url('data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0idXRmLTgiPz4gDTwhLS0gR2VuZXJhdGVkIGJ5IExheWVyaGVybyBTVkcgRXhwb3J0ZXI6IGh0dHA6Ly93d3cubGF5ZXJoZXJvLmNvbS9waG90b3Nob3Atc3ZnLWV4cG9ydGVyIC0tPg08IURPQ1RZUEUgc3ZnIFBVQkxJQyAiLS8vVzNDLy9EVEQgU1ZHIDEuMS8vRU4iICJodHRwOi8vd3d3LnczLm9yZy9HcmFwaGljcy9TVkcvMS4xL0RURC9zdmcxMS5kdGQiPg08c3ZnIHZlcnNpb249IjEuMSIgYmFzZVByb2ZpbGU9ImZ1bGwiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgeG1sbnM6eGxpbms9Imh0dHA6Ly93d3cudzMub3JnLzE5OTkveGxpbmsiIHhtbG5zOmV2PSJodHRwOi8vd3d3LnczLm9yZy8yMDAxL3htbC1ldmVudHMiIHdpZHRoPSIxMCIgaGVpZ2h0PSI0IiB2aWV3Qm94PSIwIDAgMTAgNCI+DTxnIHRyYW5zZm9ybT0ic2NhbGUoTmFOKSIgPjxwYXRoIGZpbGwtcnVsZT0iZXZlbm9kZCIgIGZpbGw9InJnYiggNDYsIDU0LCA2NCApIg0gZD0iTS0wLjQ0NCwwLjExMSBDLTAuNDQ0LDAuMTExIDEuODA5LC0wLjEzOSA0LjA0NiwtMC4xMzkgQzYuMjUzLC0wLjEzOSA4LjQ0NSwwLjExMSA4LjQ0NSwwLjExMSBDOC40NDUsMC4xMTEgOC40NDUsMS41ODMgOC40NDUsMS41ODMgQzguNDQ1LDEuNTgzIDYuMzA1LDIuMDU2IDQuMTI1LDIuMDU2IEMxLjg2MiwyLjA1NiAtMC40NDQsMS41ODMgLTAuNDQ0LDEuNTgzIEMtMC40NDQsMS41ODMgLTAuNDQ0LDAuMTExIC0wLjQ0NCwwLjExMSBaIi8+DTwvZz48L3N2Zz4N') !important;
+                background-repeat: no-repeat;
+            }
+        }
+    }
+}

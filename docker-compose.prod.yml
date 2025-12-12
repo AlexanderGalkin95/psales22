@@ -1,0 +1,84 @@
+version: '3.7'
+services:
+    pinscher_back:
+        image: $BACK_IMAGE
+        container_name: pinscher_back
+        ports:
+            - 127.0.0.1:8080:88
+            - 127.0.0.1:9000:9000
+        networks:
+            - psales
+        restart: unless-stopped
+        entrypoint: [ "/var/www/start.sh" ]
+        volumes:
+            - './docker/prod/services/php-fpm/php-ini-overrides.ini:/usr/local/etc/php/conf.d/99-overrides.ini:ro'
+            - /project/storage/logs:/var/www/storage/logs
+            - /project/storage/tmp:/var/www/storage/tmp
+
+    pinscher_scheduler:
+        image: $BACK_IMAGE
+        container_name: pinscher_scheduler
+        networks:
+            - psales
+        entrypoint: [ 'php', '/var/www/artisan', 'schedule:work' ]
+        expose: [ ]
+        restart: unless-stopped
+        volumes:
+            - './docker/prod/services/php-fpm/php-ini-overrides.ini:/usr/local/etc/php/conf.d/99-overrides.ini:ro'
+            - /project/storage/logs:/var/www/storage/logs
+            - /project/storage/tmp:/var/www/storage/tmp
+
+    pinscher_queue:
+        image: $BACK_IMAGE
+        container_name: pinscher_queue
+        networks:
+            - psales
+        entrypoint: [ 'php', '/var/www/artisan', 'queue:work' ]
+        expose: [ ]
+        restart: unless-stopped
+        volumes:
+            - './docker/prod/services/php-fpm/php-ini-overrides.ini:/usr/local/etc/php/conf.d/99-overrides.ini:ro'
+            - /project/storage/logs:/var/www/storage/logs
+            - /project/storage/tmp:/var/www/storage/tmp
+
+    pinscher_queue_distributing:
+        image: $BACK_IMAGE
+        container_name: pinscher_queue_distributing
+        networks:
+            - psales
+        entrypoint: [ 'php', '/var/www/artisan', 'queue:work', 'distributing']
+        expose: [ ]
+        restart: unless-stopped
+        volumes:
+            - './docker/prod/services/php-fpm/php-ini-overrides.ini:/usr/local/etc/php/conf.d/99-overrides.ini:ro'
+            - /project/storage/logs:/var/www/storage/logs
+            - /project/storage/tmp:/var/www/storage/tmp
+
+    #    pinscher_queue_notification:
+    #        image: $BACK_IMAGE
+    #        container_name: pinscher_queue_notification
+    #        networks:
+    #            - psales
+    #        entrypoint: [ 'php', '/var/www/artisan', 'queue:work', 'notification' ]
+    #        expose: [ ]
+    #        restart: unless-stopped
+    #        volumes:
+    #            - './docker/prod/services/php-fpm/php-ini-overrides.ini:/usr/local/etc/php/conf.d/99-overrides.ini:ro'
+    #            - /project/storage:/var/www/storage
+
+    pinscher_queue_telegram:
+        image: $BACK_IMAGE
+        container_name: pinscher_queue_telegram
+        networks:
+            - psales
+        entrypoint: [ 'php', '/var/www/artisan', 'queue:work', 'telegram' ]
+        expose: [ ]
+        restart: unless-stopped
+        volumes:
+            - './docker/prod/services/php-fpm/php-ini-overrides.ini:/usr/local/etc/php/conf.d/99-overrides.ini:ro'
+            - /project/storage/logs:/var/www/storage/logs
+            - /project/storage/tmp:/var/www/storage/tmp
+
+networks:
+    psales:
+        name: psales_network

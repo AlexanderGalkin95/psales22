@@ -1,0 +1,142 @@
+stages:
+  - code_analyze
+  - deploy_dev
+  - deploy_prod
+
+
+variables:
+  BACK_IMAGE: $CI_REGISTRY/$CI_PROJECT_PATH/pinscher_back:${CI_COMMIT_BRANCH}
+  QUEUE_IMAGE: $CI_REGISTRY/$CI_PROJECT_PATH/pinscher_queue:${CI_COMMIT_BRANCH}
+
+.scripts:
+  docker_login: echo $CI_REGISTRY_PASSWORD | docker login -u $CI_REGISTRY_USER $CI_REGISTRY --password-stdin
+
+### code analyzator SonarQube
+code_analyze:
+  stage: code_analyze
+  image:
+    name: sonarsource/sonar-scanner-cli:latest
+    entrypoint: [""]
+  variables:
+    SONAR_USER_HOME: "${CI_PROJECT_DIR}/.sonar"
+    GIT_DEPTH: "0"
+  cache:
+    key: "${CI_JOB_NAME}"
+    paths:
+      - .sonar/cache
+  script:
+    - sonar-scanner
+  allow_failure: true
+  tags:
+    - sonar
+  only:
+    - dev2
+
+### deploy dev
+build_back_dev:
+  image: docker:24-git
+  variables:
+    DOCKER_HOST: tcp://docker:2375
+    DOCKER_DRIVER: overlay2
+    DOCKER_TLS_CERTDIR: ""
+  services:
+    - name: docker:24-dind
+      alias: docker
+      command: ["--tls=false"]
+  stage: deploy_dev
+  script:
+    - !reference [.scripts, docker_login]
+    - git clone --no-checkout --depth 1 https://gitlab+deploy-token-16:$dev_secret@git.rs-app.ru/pinscher/secrets/dev.git
+    - cd dev && git show HEAD:env.dev > ../.env && git show HEAD:env.dev > ../docker/prod/services/php-cli/.env && cd .. && rm -rf dev
+    - docker pull $BACK_IMAGE || true
+    - docker build -t $BACK_IMAGE -f ./dockerfile-backend .
+    - docker push $BACK_IMAGE
+    # - docker pull $QUEUE_IMAGE || true
+    # - docker build -t $QUEUE_IMAGE -f ./dockerfile-queue .
+    # - docker push $QUEUE_IMAGE
+  only:
+    refs:
+      - dev
+  tags:
+     - gitlab-docker
+
+deploy_back_dev:
+  stage: deploy_dev
+  script:
+    - !reference [.scripts, docker_login]
+    - docker-compose -f docker-compose.dev.yml down
+    - docker-compose -f docker-compose.dev.yml pull
+    - docker-compose -f docker-compose.dev.yml up -d --build
+  when: on_success
+  needs: ["build_back_dev"]
+  tags:
+    - pinscher-dev
+  only:
+    refs:
+      - dev
+
+app_install_dev:
+    stage: deploy_dev
+    script:
+        - !reference [.scripts, docker_login]
+        - docker exec pinscher_back sh -c "php artisan passport:install && php artisan migrate && php artisan telegram:bot-init"
+    when: on_success
+    needs: ["deploy_back_dev"]
+    tags:
+        - pinscher-dev
+    only:
+        refs:
+            - dev
+
+### deploy prod
+build_back_prod:
+    image: docker:24-git
+    variables:
+        DOCKER_HOST: tcp://docker:2375
+        DOCKER_DRIVER: overlay2
+        DOCKER_TLS_CERTDIR: ""
+    services:
+        - name: docker:24-dind
+          alias: docker
+          command: ["--tls=false"]
+    stage: deploy_prod
+    script:
+        - !reference [.scripts, docker_login]
+        - git clone --no-checkout --depth 1 https://gitlab+deploy-token-19:$prod_secret@git.rs-app.ru/pinscher/secrets/prod.git
+        - cd prod && git show HEAD:env.prod > ../.env && git show HEAD:env.prod > ../docker/prod/services/php-cli/.env && cd .. && rm -rf prod
+        - docker pull $BACK_IMAGE || true
+        - docker build -t $BACK_IMAGE -f ./dockerfile-backend .
+        - docker push $BACK_IMAGE
+    only:
+        refs:
+            - master
+    tags:
+        - gitlab-docker
+
+deploy_back_prod:
+    stage: deploy_prod
+    script:
+        - !reference [.scripts, docker_login]
+        - docker compose -f docker-compose.prod.yml down
+        - docker compose -f docker-compose.prod.yml pull
+        - docker compose -f docker-compose.prod.yml up -d --build
+    when: on_success
+    needs: ["build_back_prod"]
+    tags:
+        - pinscher-prod
+    only:
+        refs:
+            - master
+
+app_install_prod:
+    stage: deploy_prod
+    script:
+        - !reference [.scripts, docker_login]
+        - docker exec pinscher_back sh -c "php artisan passport:install && php artisan migrate --force && php artisan telegram:bot-init"
+    when: on_success
+    needs: ["deploy_back_prod"]
+    tags:
+        - pinscher-prod
+    only:
+        refs:
+            - master

@@ -1,0 +1,23 @@
+@import '~vue2-datepicker/scss/index';
+
+.mx-calendar-content {
+  .mx-table-date {
+    .mx-date-row {
+      .cell.active {
+        color: #fff;
+        background-color: $danger;
+      }
+    }
+
+    .today {
+      color: $danger;
+    }
+  }
+}
+.mx-time-content {
+  .mx-time-column {
+    .mx-time-item.active {
+      color: $danger;
+    }
+  }
+}
